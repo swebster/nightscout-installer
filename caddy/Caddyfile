@@ -1,0 +1,3 @@
+nightscout.{$DOMAIN_NAME}:80 {
+	reverse_proxy nightscout:1337
+}

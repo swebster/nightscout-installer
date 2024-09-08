@@ -9,20 +9,22 @@ x-logging:
 services:
   mongo:
     image: mongo:4.4
+    restart: unless-stopped
     volumes:
-      - mongo-data:/data/db
+      - mongo_config:/data/configdb
+      - mongo_data:/data/db
     logging: *default-logging
 
   nightscout:
     image: nightscout/cgm-remote-monitor:15.0.2
     container_name: nightscout
-    restart: always
+    restart: unless-stopped
     depends_on:
       - mongo
     logging: *default-logging
     environment:
       NODE_ENV: production
-      TZ: ${NIGHTSCOUT_TZ}
+      TZ: ${NIGHTSCOUT_TIMEZONE}
 
       # INSECURE_USE_HTTP (false) - Redirect unsafe http traffic to https. Possible values false, or true.
       # Your site redirects to https by default. If you don't want that from Nightscout, but want to
@@ -52,13 +54,33 @@ services:
       # a token from every visit, using status-only will enable api-secret based login.
       AUTH_DEFAULT_ROLES: readable
 
+      # BASE_URL - Used for building links to your site's API, i.e. Pushover callbacks, usually the URL
+      # of your Nightscout site.
+      BASE_URL: "http://nightscout.${DOMAIN_NAME}"
+
       # PORT (1337) - The port that the node.js application will listen on.
       PORT: 1337
 
       # For all other settings, please refer to the Environment section of the README
       # https://github.com/nightscout/cgm-remote-monitor#environment
+    expose:
+      - 1337
+
+  caddy:
+    image: caddy:2.8.4
+    restart: unless-stopped
     ports:
-      - 1337:1337
+      - 80:80
+    volumes:
+      - $PWD/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_config:/config
+      - caddy_data:/data
+    logging: *default-logging
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
 
 volumes:
-  mongo-data:
+  mongo_config:
+  mongo_data:
+  caddy_config:
+  caddy_data:

@@ -1,0 +1,64 @@
+
+x-logging:
+  &default-logging
+  options:
+    max-size: '10m'
+    max-file: '5'
+  driver: json-file
+
+services:
+  mongo:
+    image: mongo:4.4
+    volumes:
+      - mongo-data:/data/db
+    logging: *default-logging
+
+  nightscout:
+    image: nightscout/cgm-remote-monitor:15.0.2
+    container_name: nightscout
+    restart: always
+    depends_on:
+      - mongo
+    logging: *default-logging
+    environment:
+      NODE_ENV: production
+      TZ: ${NIGHTSCOUT_TZ}
+
+      # INSECURE_USE_HTTP (false) - Redirect unsafe http traffic to https. Possible values false, or true.
+      # Your site redirects to https by default. If you don't want that from Nightscout, but want to
+      # implement that with a Nginx or Apache proxy, set INSECURE_USE_HTTP to true. Note: This will allow
+      # (unsafe) http traffic to your Nightscout instance and is not recommended.
+      #
+      # In this case, the `nightscout` service can use HTTP, because we will use a proxy to serve the HTTPS
+      # and manage TLS certificates
+      INSECURE_USE_HTTP: 'true'
+
+      # MONGO_CONNECTION - The connection string for your Mongo database.
+      # Something like mongodb://sally:sallypass@ds099999.mongolab.com:99999/nightscout
+      # The default connects to the `mongo` included in this docker-compose file.
+      # If you change it, you probably also want to comment out the entire `mongo` service block
+      # and `depends_on` block above.
+      MONGO_CONNECTION: mongodb://mongo:27017/nightscout
+
+      # API_SECRET - A secret passphrase that must be at least 12 characters long.
+      API_SECRET: ${NIGHTSCOUT_API_SECRET}
+
+      # ENABLE - Used to enable optional features, expects a space delimited list, such as: careportal rawbg iob
+      # See https://github.com/nightscout/cgm-remote-monitor#plugins for details
+      ENABLE: careportal rawbg iob
+
+      # AUTH_DEFAULT_ROLES (readable) - possible values readable, denied, or any valid role name.
+      # When readable, anyone can view Nightscout without a token. Setting it to denied will require
+      # a token from every visit, using status-only will enable api-secret based login.
+      AUTH_DEFAULT_ROLES: readable
+
+      # PORT (1337) - The port that the node.js application will listen on.
+      PORT: 1337
+
+      # For all other settings, please refer to the Environment section of the README
+      # https://github.com/nightscout/cgm-remote-monitor#environment
+    ports:
+      - 1337:1337
+
+volumes:
+  mongo-data:

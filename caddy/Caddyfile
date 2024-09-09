@@ -1,3 +1,6 @@
-nightscout.{$DOMAIN_NAME}:80 {
+nightscout.{$DOMAIN_NAME} {
+	tls {
+		dns cloudflare {$CLOUDFLARE_API_TOKEN}
+	}
 	reverse_proxy nightscout:1337
 }

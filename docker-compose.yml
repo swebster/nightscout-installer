@@ -24,16 +24,7 @@ services:
     logging: *default-logging
     environment:
       NODE_ENV: production
-      TZ: ${NIGHTSCOUT_TIMEZONE}
-
-      # INSECURE_USE_HTTP (false) - Redirect unsafe http traffic to https. Possible values false, or true.
-      # Your site redirects to https by default. If you don't want that from Nightscout, but want to
-      # implement that with a Nginx or Apache proxy, set INSECURE_USE_HTTP to true. Note: This will allow
-      # (unsafe) http traffic to your Nightscout instance and is not recommended.
-      #
-      # In this case, the `nightscout` service can use HTTP, because we will use a proxy to serve the HTTPS
-      # and manage TLS certificates
-      INSECURE_USE_HTTP: 'true'
+      TZ: ${NIGHTSCOUT_TIMEZONE:?}
 
       # MONGO_CONNECTION - The connection string for your Mongo database.
       # Something like mongodb://sally:sallypass@ds099999.mongolab.com:99999/nightscout
@@ -43,7 +34,7 @@ services:
       MONGO_CONNECTION: mongodb://mongo:27017/nightscout
 
       # API_SECRET - A secret passphrase that must be at least 12 characters long.
-      API_SECRET: ${NIGHTSCOUT_API_SECRET}
+      API_SECRET: ${NIGHTSCOUT_API_SECRET:?}
 
       # ENABLE - Used to enable optional features, expects a space delimited list, such as: careportal rawbg iob
       # See https://github.com/nightscout/cgm-remote-monitor#plugins for details
@@ -56,7 +47,7 @@ services:
 
       # BASE_URL - Used for building links to your site's API, i.e. Pushover callbacks, usually the URL
       # of your Nightscout site.
-      BASE_URL: "http://nightscout.${DOMAIN_NAME}"
+      BASE_URL: "https://nightscout.${DOMAIN_NAME:?}"
 
       # PORT (1337) - The port that the node.js application will listen on.
       PORT: 1337
@@ -67,17 +58,23 @@ services:
       - 1337
 
   caddy:
-    image: caddy:2.8.4
+    build:
+      context: $PWD/caddy
+      args:
+        CADDY_VERSION: ${CADDY_VERSION:?}
+        CLOUDFLARE_VERSION: ${CLOUDFLARE_VERSION:?}
+    image: "caddy:${CADDY_VERSION:?}-cloudflare"
     restart: unless-stopped
     ports:
-      - 80:80
+      - 443:443
     volumes:
       - $PWD/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_config:/config
       - caddy_data:/data
     logging: *default-logging
     environment:
-      DOMAIN_NAME: ${DOMAIN_NAME}
+      DOMAIN_NAME: ${DOMAIN_NAME:?}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:?}
 
 volumes:
   mongo_config:

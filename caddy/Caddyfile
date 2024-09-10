@@ -1,6 +1,15 @@
-nightscout.{$DOMAIN_NAME} {
+(cloudflare) {
 	tls {
 		dns cloudflare {$CLOUDFLARE_API_TOKEN}
 	}
+}
+
+nightscout.{$DOMAIN_NAME} {
+	import cloudflare
 	reverse_proxy nightscout:1337
+}
+
+{$DOMAIN_NAME} {
+	import cloudflare
+	respond 404
 }

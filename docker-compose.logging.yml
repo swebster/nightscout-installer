@@ -1,0 +1,20 @@
+
+x-logging:
+  &default-logging
+  options:
+    max-size: '10m'
+    max-file: '5'
+  driver: json-file
+
+services:
+  mongo:
+    logging: *default-logging
+
+  nightscout:
+    logging: *default-logging
+
+  caddy:
+    logging: *default-logging
+
+  cloudflared:
+    logging: *default-logging

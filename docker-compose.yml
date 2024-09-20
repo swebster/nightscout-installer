@@ -1,21 +1,11 @@
 
-x-logging:
-  &default-logging
-  options:
-    max-size: '10m'
-    max-file: '5'
-  driver: json-file
-
 services:
   mongo:
     image: mongo:4.4
     restart: unless-stopped
-    networks:
-      - backend
     volumes:
       - mongo_config:/data/configdb
       - mongo_data:/data/db
-    logging: *default-logging
 
   nightscout:
     image: nightscout/cgm-remote-monitor:15.0.2
@@ -25,9 +15,6 @@ services:
       - mongo
     expose:
       - 1337
-    networks:
-      - backend
-    logging: *default-logging
     environment:
       NODE_ENV: production
       TZ: "${NIGHTSCOUT_TIMEZONE:?}"
@@ -59,24 +46,15 @@ services:
       # https://github.com/nightscout/cgm-remote-monitor#environment
 
   caddy:
-    build:
-      context: $PWD/caddy
-      args:
-        CADDY_VERSION: "${CADDY_VERSION:?}"
-        CLOUDFLARE_VERSION: "${CLOUDFLARE_VERSION:?}"
     image: "caddy:${CADDY_VERSION:?}-cloudflare"
     container_name: caddy
     restart: unless-stopped
     ports:
       - 8443:443
-    networks:
-      - backend
-      - reverse_proxy
     volumes:
       - $PWD/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_config:/config
       - caddy_data:/data
-    logging: *default-logging
     environment:
       DOMAIN_NAME: "${DOMAIN_NAME:?}"
       CLOUDFLARE_API_TOKEN: "${CLOUDFLARE_API_TOKEN:?}"
@@ -87,15 +65,8 @@ services:
     restart: unless-stopped
     depends_on:
       - caddy
-    networks:
-      - reverse_proxy
-    logging: *default-logging
     environment:
       TUNNEL_TOKEN: "${CLOUDFLARE_TUNNEL_TOKEN:?}"
-
-networks:
-  backend:
-  reverse_proxy:
 
 volumes:
   mongo_config:

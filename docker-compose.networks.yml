@@ -1,0 +1,22 @@
+
+services:
+  mongo:
+    networks:
+      - backend
+
+  nightscout:
+    networks:
+      - backend
+
+  caddy:
+    networks:
+      - backend
+      - reverse_proxy
+
+  cloudflared:
+    networks:
+      - reverse_proxy
+
+networks:
+  backend:
+  reverse_proxy:

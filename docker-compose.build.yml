@@ -1,0 +1,9 @@
+
+services:
+  caddy:
+    build:
+      context: $PWD/caddy
+      args:
+        CADDY_VERSION: "${CADDY_VERSION:?}"
+        CLOUDFLARE_VERSION: "${CLOUDFLARE_VERSION:?}"
+    image: "caddy:${CADDY_VERSION:?}-cloudflare"

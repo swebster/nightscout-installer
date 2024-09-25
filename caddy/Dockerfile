@@ -4,10 +4,10 @@ ARG CADDY_VERSION
 
 FROM caddy:${CADDY_VERSION}-builder AS builder
 
-ARG CLOUDFLARE_VERSION
+ARG CADDY_CLOUDFLARE_VERSION
 
 RUN xcaddy build \
-  --with github.com/caddy-dns/cloudflare@${CLOUDFLARE_VERSION}
+  --with github.com/caddy-dns/cloudflare@${CADDY_CLOUDFLARE_VERSION}
 
 FROM caddy:${CADDY_VERSION}
 

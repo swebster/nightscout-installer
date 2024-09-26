@@ -2,7 +2,7 @@
 services:
   caddy:
     build:
-      context: $PWD/caddy
+      context: ./caddy
       args:
         CADDY_VERSION: "${CADDY_VERSION:?}"
         CLOUDFLARE_VERSION: "${CLOUDFLARE_VERSION:?}"

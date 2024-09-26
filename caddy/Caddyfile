@@ -1,6 +1,6 @@
 (cloudflare) {
 	tls {
-		dns cloudflare {$CLOUDFLARE_API_TOKEN}
+		dns cloudflare {file./run/secrets/cloudflare_api_token}
 	}
 }
 

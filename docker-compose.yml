@@ -44,6 +44,8 @@ services:
 
       # For all other settings, please refer to the Environment section of the README
       # https://github.com/nightscout/cgm-remote-monitor#environment
+    secrets:
+      - nightscout_api_secret
 
   caddy:
     image: "caddy:${CADDY_VERSION:?}-cloudflare"
@@ -57,16 +59,25 @@ services:
       - caddy_data:/data
     environment:
       DOMAIN_NAME: "${DOMAIN_NAME:?}"
-      CLOUDFLARE_API_TOKEN: "${CLOUDFLARE_API_TOKEN:?}"
+    secrets:
+      - cloudflare_api_token
 
   cloudflared:
     image: cloudflare/cloudflared:2024.8.3
-    command: tunnel run
+    command: tunnel run --credentials-file /run/secrets/cloudflare_tunnel_cred "${CLOUDFLARE_TUNNEL_NAME:?}"
     restart: unless-stopped
     depends_on:
       - caddy
-    environment:
-      TUNNEL_TOKEN: "${CLOUDFLARE_TUNNEL_TOKEN:?}"
+    secrets:
+      - cloudflare_tunnel_cred
+
+secrets:
+  nightscout_api_secret:
+    external: true
+  cloudflare_api_token:
+    external: true
+  cloudflare_tunnel_cred:
+    external: true
 
 volumes:
   mongo_config:

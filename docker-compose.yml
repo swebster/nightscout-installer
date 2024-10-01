@@ -8,7 +8,7 @@ services:
       - mongo_data:/data/db
 
   nightscout:
-    image: nightscout/cgm-remote-monitor:15.0.2
+    image: "nightscout/cgm-remote-monitor:${NIGHTSCOUT_VERSION:?}-secrets"
     container_name: nightscout
     restart: unless-stopped
     depends_on:
@@ -26,8 +26,8 @@ services:
       # and `depends_on` block above.
       MONGO_CONNECTION: mongodb://mongo:27017/nightscout
 
-      # API_SECRET - A secret passphrase that must be at least 12 characters long.
-      API_SECRET: "${NIGHTSCOUT_API_SECRET:?}"
+      # API_SECRET_FILE - A file that contains a secret passphrase which must be at least 12 characters long.
+      API_SECRET_FILE: /run/secrets/nightscout_api_secret
 
       # ENABLE - Used to enable optional features, expects a space delimited list, such as: careportal rawbg iob
       # See https://github.com/nightscout/cgm-remote-monitor#plugins for details

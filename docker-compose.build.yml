@@ -1,5 +1,12 @@
 
 services:
+  nightscout:
+    build:
+      context: ./cgm-remote-monitor
+      args:
+        NIGHTSCOUT_VERSION: "${NIGHTSCOUT_VERSION:?}"
+    image: "nightscout/cgm-remote-monitor:${NIGHTSCOUT_VERSION:?}-secrets"
+
   caddy:
     build:
       context: ./caddy

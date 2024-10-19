@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-# shellcheck source=run_as_podman.sh
-source "$SCRIPT_DIR/run_as_podman.sh"
+PODMAN_HOME='/home/podman'
 
 function assign_subids() {
   mapfile -t -d: subuids < <(tail -1 /etc/subuid | cut -d: -f2,3)
@@ -24,7 +23,9 @@ function assign_subids() {
 }
 
 if ! grep -q podman /etc/passwd; then
-  sudo adduser --system --home "$PODMAN_HOME" podman
+  sudo adduser --system --shell /bin/bash --home "${PODMAN_HOME}" podman
+  # TODO: sudo chsh -s /usr/sbin/nologin podman
+  sudo -u podman cp -t "${PODMAN_HOME}" /etc/skel/.*
 fi
 
 if [[ -d /run/systemd/system ]]; then
@@ -37,8 +38,8 @@ if ! grep -q podman /etc/subuid; then
   assign_subids
 fi
 
-if ! run_as_podman test -x "$PODMAN_HOME/.local/bin/task"; then
-  sudo install -o podman -g nogroup -t "$PODMAN_HOME" "$SCRIPT_DIR/install_task.sh"
-  run_as_podman "$PODMAN_HOME/install_task.sh"
-  run_as_podman rm -f "$PODMAN_HOME/install_task.sh"
+if ! sudo -u podman test -x "${PODMAN_HOME}/.local/bin/task"; then
+  sudo install -o podman -g nogroup -t "${PODMAN_HOME}" "${SCRIPT_DIR}/install_task.sh"
+  sudo -u podman "${PODMAN_HOME}/install_task.sh"
+  sudo -u podman rm -f "${PODMAN_HOME}/install_task.sh"
 fi

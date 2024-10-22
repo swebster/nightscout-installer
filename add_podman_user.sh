@@ -2,6 +2,7 @@
 
 readonly PODMAN_HOME='/home/podman'
 readonly PODMAN_BIN="${PODMAN_HOME}/.local/bin"
+readonly PODMAN_SRC="${PODMAN_HOME}/src"
 readonly COMPOSE_VERSION='v2.29.6'
 readonly PODLET_VERSION='v0.3.0'
 readonly TASK_VERSION='v3.39.2'
@@ -90,3 +91,9 @@ for dependency in {task,docker-compose,podlet,yq}; do
     "install_${dependency//-/_}"
   fi
 done
+
+if ! sudo -u podman test -d "${PODMAN_SRC}/nightscout"; then
+  sudo -u podman sh -c "\
+    mkdir -p ${PODMAN_SRC} && \
+    git clone https://github.com/swebster/nightscout.git ${PODMAN_SRC}/nightscout"
+fi

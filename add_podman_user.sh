@@ -48,7 +48,9 @@ function install_docker_compose() {
     curl -L ${compose_binary} -o ${PODMAN_BIN}/docker-compose && \
     chmod +x ${PODMAN_BIN}/docker-compose && \
     systemctl --user enable --now podman.socket && \
-    printf \"\nexport DOCKER_HOST=${docker_host}\n\" >> ${PODMAN_HOME}/.profile"
+    printf 'export %s=%s\n' \
+      COMPOSE_ENV_FILES .env,.env.local,.env.secrets \
+      DOCKER_HOST ${docker_host} >> ${PODMAN_HOME}/.profile"
 }
 
 function install_podlet() {

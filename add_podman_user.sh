@@ -49,7 +49,7 @@ function install_docker_compose() {
     chmod +x ${PODMAN_BIN}/docker-compose && \
     systemctl --user enable --now podman.socket && \
     printf 'export %s=%s\n' \
-      COMPOSE_ENV_FILES .env,.env.local,.env.secrets \
+      COMPOSE_ENV_FILES .env,.env.local \
       DOCKER_HOST ${docker_host} >> ${PODMAN_HOME}/.profile"
 }
 

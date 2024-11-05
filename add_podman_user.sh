@@ -50,7 +50,8 @@ function install_docker_compose() {
     systemctl --user enable --now podman.socket && \
     printf 'export %s=%s\n' \
       COMPOSE_ENV_FILES .env,.env.local \
-      DOCKER_HOST ${docker_host} >> ${PODMAN_HOME}/.profile"
+      DOCKER_HOST ${docker_host} \
+      >> ${PODMAN_HOME}/.profile"
 }
 
 function install_podlet() {

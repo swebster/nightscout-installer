@@ -1,7 +1,7 @@
 
 services:
   mongo:
-    image: mongo:4.4
+    image: "mongo:${MONGO_VERSION:?}"
     restart: unless-stopped
     volumes:
       - mongo_config:/data/configdb
@@ -63,7 +63,7 @@ services:
       - cloudflare_api_token
 
   cloudflared:
-    image: cloudflare/cloudflared:2024.9.1
+    image: "cloudflare/cloudflared:${CLOUDFLARED_VERSION:?}"
     command: tunnel run --credentials-file /run/secrets/cloudflare_tunnel_cred "${CLOUDFLARE_TUNNEL_NAME:?}"
     restart: unless-stopped
     depends_on:

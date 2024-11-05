@@ -37,13 +37,14 @@ function install_task() {
     rm -f ${task_installer}"
 }
 
+# shellcheck disable=SC2016
 function install_docker_compose() {
   local -r docker_downloads='https://github.com/docker/compose/releases/download'
   local -r compose_binary="${docker_downloads}/${COMPOSE_VERSION}/docker-compose-linux-x86_64"
-  # shellcheck disable=SC2016
   local -r docker_host='unix://${XDG_RUNTIME_DIR%/}/podman/podman.sock'
+  local -r podman_config='${XDG_CONFIG_HOME:-$HOME/.config}'
 
-  # use a login shell so XDG_RUNTIME_DIR is defined when DOCKER_HOST is written to ~/.profile
+  # use a login shell so XDG_* variables are defined when writing to config files
   sudo -u podman --login sh -c "\
     curl -L ${compose_binary} -o ${PODMAN_BIN}/docker-compose && \
     chmod +x ${PODMAN_BIN}/docker-compose && \
@@ -51,7 +52,12 @@ function install_docker_compose() {
     printf 'export %s=%s\n' \
       COMPOSE_ENV_FILES .env,.env.local \
       DOCKER_HOST ${docker_host} \
-      >> ${PODMAN_HOME}/.profile"
+      >> ${PODMAN_HOME}/.profile && \
+    mkdir -p ${podman_config}/containers && \
+    printf '%s\n' \
+      [engine] \
+      compose_warning_logs=false \
+      > ${podman_config}/containers/containers.conf"
 }
 
 function install_podlet() {

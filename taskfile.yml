@@ -1,0 +1,36 @@
+version: '3'
+
+vars:
+  DOCKER:
+    sh: which podman || which docker
+
+tasks:
+  configure:
+    cmds:
+      - ./configure_local.sh
+    interactive: true
+    sources:
+      - configure_local.sh
+    generates:
+      - .env.local
+
+  images:
+    deps: [configure]
+    vars:
+      MISSING_IMAGES:
+        sh: >
+          comm -23
+          <({{.DOCKER}} compose config --images | sort)
+          <({{.DOCKER}} images --filter dangling=false | tail -n+2 |
+            tr -s ' ' ':' | cut -d ':' -f 1,2 | sed -E 's|^docker.io/(library/)?||' | sort)
+    cmds:
+      - echo "Couldn't find the following images:"
+      - for: { var: MISSING_IMAGES }
+        cmd: echo {{.ITEM}}
+      - '{{.DOCKER}} compose pull cloudflared mongo'
+      - '{{.DOCKER}} compose build nightscout caddy'
+    status:
+      - test {{len .MISSING_IMAGES}} -eq 0
+
+  default:
+    deps: [images]

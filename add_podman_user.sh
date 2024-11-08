@@ -6,6 +6,7 @@ readonly PODMAN_SRC="${PODMAN_HOME}/src"
 readonly COMPOSE_VERSION='v2.29.6'
 readonly PODLET_VERSION='v0.3.0'
 readonly TASK_VERSION='v3.39.2'
+readonly JQ_VERSION='jq-1.7.1'
 readonly YQ_VERSION='v4.44.3'
 
 function assign_subids() {
@@ -71,6 +72,14 @@ function install_podlet() {
     rm -rf ${PODMAN_HOME}/${podlet_dir}"
 }
 
+function install_jq() {
+  local -r jq_downloads='https://github.com/jqlang/jq/releases/download'
+
+  sudo -u podman sh -c "\
+    curl -L ${jq_downloads}/${JQ_VERSION}/jq-linux-amd64 -o ${PODMAN_BIN}/jq && \
+    chmod +x ${PODMAN_BIN}/jq"
+}
+
 function install_yq() {
   local -r yq_downloads='https://github.com/mikefarah/yq/releases/download'
 
@@ -95,7 +104,7 @@ if ! grep -q podman /etc/subuid; then
   assign_subids
 fi
 
-for dependency in {task,docker-compose,podlet,yq}; do
+for dependency in {task,docker-compose,podlet,jq,yq}; do
   if ! sudo -u podman test -x "${PODMAN_BIN}/${dependency}"; then
     "install_${dependency//-/_}"
   fi

@@ -21,8 +21,8 @@ tasks:
         sh: >
           comm -23
           <({{.DOCKER}} compose config --images | sort)
-          <({{.DOCKER}} images --filter dangling=false | tail -n+2 |
-            tr -s ' ' ':' | cut -d ':' -f 1,2 | sed -E 's|^docker.io/(library/)?||' | sort)
+          <({{.DOCKER}} images --filter dangling=false --format {{`{{.Repository}}:{{.Tag}}`}} |
+            sed -E 's|^docker.io/(library/)?||' | sort)
     cmds:
       - echo "Couldn't find the following images:"
       - for: { var: MISSING_IMAGES }

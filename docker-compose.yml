@@ -61,6 +61,7 @@ services:
       DOMAIN_NAME: "${DOMAIN_NAME:?}"
     secrets:
       - cloudflare_api_token
+      - cloudflare_zone_token
 
   cloudflared:
     image: "cloudflare/cloudflared:${CLOUDFLARED_VERSION:?}"
@@ -75,6 +76,8 @@ secrets:
   nightscout_api_secret:
     external: true
   cloudflare_api_token:
+    external: true
+  cloudflare_zone_token:
     external: true
   cloudflare_tunnel_cred:
     external: true

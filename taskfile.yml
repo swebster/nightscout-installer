@@ -5,7 +5,7 @@ vars:
     sh: which podman || which docker
 
 tasks:
-  configure:
+  configure-local:
     cmds:
       - ./configure_local.sh
     interactive: true
@@ -14,8 +14,18 @@ tasks:
     generates:
       - .env.local
 
+  configure-secrets:
+    deps: [configure-local]
+    cmds:
+      - ./configure_secrets.sh
+    interactive: true
+    sources:
+      - configure_secrets.sh
+    generates:
+      - .env.secrets
+
   images:
-    deps: [configure]
+    deps: [configure-local]
     vars:
       MISSING_IMAGES:
         sh: >

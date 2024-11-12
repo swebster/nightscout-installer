@@ -32,13 +32,13 @@ tasks:
   install-secrets:
     deps: [configure-secrets]
     vars:
-      SECRETS:
-        sh: grep -v COMPOSE_FILE .env.secrets | awk -F= '{print tolower($1)}'
       MISSING_SECRETS:
-        sh: echo "{{.SECRETS}}" | xargs -I{} sh -c "{{.DOCKER}} secret exists {} || echo {}"
+        sh: >
+          grep -v COMPOSE_FILE .env.secrets | awk -F= '{print tolower($1)}' |
+            xargs -I{} sh -c '{{.DOCKER}} secret exists {} || printf "%s\n" {}'
     cmds:
       - for: { var: MISSING_SECRETS }
-        cmd: sed -n "s/^{{.ITEM}}=//ip" .env.secrets | {{.DOCKER}} secret create {{.ITEM}} -
+        cmd: sed -n 's/^{{.ITEM}}=//ip' .env.secrets | {{.DOCKER}} secret create {{.ITEM}} -
     preconditions:
       - sh: test {{base .DOCKER}} = podman
         msg: Installation of secrets is only supported when using podman.
@@ -57,7 +57,7 @@ tasks:
     cmds:
       - echo "Couldn't find the following images:"
       - for: { var: MISSING_IMAGES }
-        cmd: echo {{.ITEM}}
+        cmd: printf '%s\n' {{.ITEM}}
       - '{{.DOCKER}} compose pull cloudflared mongo'
       - '{{.DOCKER}} compose build nightscout caddy'
     status:

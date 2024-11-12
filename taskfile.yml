@@ -1,8 +1,13 @@
 version: '3'
 
+env:
+  COMPOSE_ENV_FILES: .env,.env.local
+
 vars:
   DOCKER:
     sh: which podman || which docker
+
+run: when_changed
 
 tasks:
   configure-local:
@@ -58,5 +63,24 @@ tasks:
     status:
       - test {{len .MISSING_IMAGES}} -eq 0
 
+  ps:
+    deps: [configure-local]
+    cmds:
+      - '{{.DOCKER}} compose ps'
+
+  up:
+    deps: [configure-secrets, images]
+    env:
+      COMPOSE_ENV_FILES: '{{printf "%s,.env.secrets" .COMPOSE_ENV_FILES}}'
+    cmds:
+      - '{{.DOCKER}} compose up --detach'
+
+  down:
+    deps: [configure-secrets, images]
+    env:
+      COMPOSE_ENV_FILES: '{{printf "%s,.env.secrets" .COMPOSE_ENV_FILES}}'
+    cmds:
+      - '{{.DOCKER}} compose down'
+
   default:
-    deps: [images]
+    deps: [ps]

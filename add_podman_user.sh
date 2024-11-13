@@ -90,7 +90,6 @@ function install_yq() {
 
 if ! grep -q podman /etc/passwd; then
   sudo adduser --system --shell /bin/bash --home "${PODMAN_HOME}" podman
-  # TODO: sudo chsh -s /usr/sbin/nologin podman
   sudo -u podman cp -t "${PODMAN_HOME}" /etc/skel/.*
 fi
 

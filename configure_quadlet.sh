@@ -2,7 +2,9 @@
 
 # generate intermediate compose file with interpolated variables
 trap 'rm -f docker-compose.config.yml' EXIT
-docker compose -f docker-compose.yml config --no-normalize -o docker-compose.config.yml
+
+$(which podman || which docker) compose \
+  -f docker-compose.yml config --no-normalize -o docker-compose.config.yml
 
 # revert .services.[].ports and volumes to short syntax for compatibility with podlet
 # https://github.com/mikefarah/yq/#install

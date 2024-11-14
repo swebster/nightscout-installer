@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+readonly CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}"
 trap 'rm -f docker-compose.config.yml' EXIT
 
 # generate intermediate compose file with interpolated variables
@@ -19,5 +20,6 @@ major_minor=$(sed -n 's/podman version //p' <<< "${podman_version}" | cut -d. -f
 podlet_schema="${major_minor/4.9/4.8}"
 pod_flag=$(test "${major_minor%%.*}" -ge 5 && echo --pod)
 
-# generate quadlet configuration from the intermediate compose file
-podlet -p "${podlet_schema}" compose ${pod_flag:+"$pod_flag"} docker-compose.config.yml
+# generate quadlet configuration files from the intermediate compose file
+mkdir -p "${CONFIG_ROOT}/containers/systemd"
+podlet -p "${podlet_schema}" -u compose ${pod_flag:+"$pod_flag"} docker-compose.config.yml

@@ -29,6 +29,26 @@ tasks:
     generates:
       - .env.secrets
 
+  configure-quadlet:
+    vars:
+      CONFIG_DIR: '{{.XDG_CONFIG_HOME | default (printf "%s/.config" .HOME)}}/containers/systemd'
+      CONTAINERS:
+        sh: yq -o csv '.services | keys' docker-compose.yml | sed -e 's/nightscout/nightscout*/'
+      NETWORKS:
+        sh: yq -o csv '.networks | keys' docker-compose.networks.yml
+      CONTAINER_CONFIG: '{{printf "%s/{%s}.container" .CONFIG_DIR .CONTAINERS}}'
+      NETWORK_CONFIG: '{{printf "%s/{%s}.network" .CONFIG_DIR .NETWORKS}}'
+      POD_CONFIG: '{{printf "%s/nightscout.pod" .CONFIG_DIR}}'
+    cmds:
+      - rm -f {{.CONTAINER_CONFIG}} {{.NETWORK_CONFIG}} {{.POD_CONFIG}}
+      - ./configure_quadlet.sh
+    sources:
+      - configure_quadlet.sh
+      - docker-compose.yml
+      - docker-compose.networks.yml
+    status:
+      - bash -c 'compgen -G {{printf "%s/nightscout*.container" .CONFIG_DIR}}'
+
   install-secrets:
     deps: [configure-secrets]
     vars:

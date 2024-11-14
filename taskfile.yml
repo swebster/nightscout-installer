@@ -42,10 +42,14 @@ tasks:
     cmds:
       - rm -f {{.CONTAINER_CONFIG}} {{.NETWORK_CONFIG}} {{.POD_CONFIG}}
       - ./configure_quadlet.sh
+      - systemctl --user daemon-reload
     sources:
       - configure_quadlet.sh
       - docker-compose.yml
       - docker-compose.networks.yml
+    preconditions:
+      - sh: test -d /run/systemd/system
+        msg: Quadlet configuration is only supported when using systemd.
     status:
       - bash -c 'compgen -G {{printf "%s/nightscout*.container" .CONFIG_DIR}}'
 

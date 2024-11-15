@@ -55,7 +55,6 @@ services:
     ports:
       - 8443:443
     volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_config:/config
       - caddy_data:/data
     environment:

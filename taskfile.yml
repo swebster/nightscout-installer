@@ -84,6 +84,10 @@ tasks:
         cmd: printf '%s\n' {{.ITEM}}
       - '{{.DOCKER}} compose pull cloudflared mongo'
       - '{{.DOCKER}} compose build nightscout caddy'
+    sources:
+      - caddy/*
+      - cgm-remote-monitor/*
+      - .env
     status:
       - test {{len .MISSING_IMAGES}} -eq 0
 

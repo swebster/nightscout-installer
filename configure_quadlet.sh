@@ -22,4 +22,10 @@ pod_flag=$(test "${major_minor%%.*}" -ge 5 && echo --pod)
 
 # generate quadlet configuration files from the intermediate compose file
 mkdir -p "${CONFIG_ROOT}/containers/systemd"
-podlet -p "${podlet_schema}" -u compose ${pod_flag:+"$pod_flag"} docker-compose.config.yml
+{ podlet_output=$(podlet -p "${podlet_schema}" -u --skip-services-check \
+  compose ${pod_flag:+"$pod_flag"} docker-compose.config.yml | tee /dev/fd/3); } 3>&1
+
+# correct the network configuration of all of the generated container files
+while IFS= read -r file; do
+  sed -i '/^Network=/s/$/.network/g' "${file}"
+done < <(printf '%s\n' "${podlet_output}" | sed -ne '/\.container$/s/^Wrote to file: //gp')

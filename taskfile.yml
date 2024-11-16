@@ -62,7 +62,9 @@ tasks:
             xargs -I{} sh -c '{{.DOCKER}} secret exists {} || printf "%s\n" {}'
     cmds:
       - for: { var: MISSING_SECRETS }
-        cmd: sed -n 's/^{{.ITEM}}=//ip' .env.secrets | {{.DOCKER}} secret create {{.ITEM}} -
+        cmd: >
+          awk -F= '$1 == "{{upper .ITEM}}" {printf("%s", $2)}' .env.secrets |
+            {{.DOCKER}} secret create {{.ITEM}} -
     preconditions:
       - sh: test {{base .DOCKER}} = podman
         msg: Installation of secrets is only supported when using podman.

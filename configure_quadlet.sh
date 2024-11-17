@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 readonly CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}"
+readonly PODLET_FILE=.task/quadlet.config
 trap 'rm -f docker-compose.config.yml' EXIT
 
 # generate intermediate compose file with interpolated variables
@@ -28,7 +29,7 @@ if ! podlet_output=$(podlet -p "${podlet_schema}" -u --skip-services-check \
 fi
 
 # record the full paths of all of the generated container/network/pod files
-printf '%s\n' "${podlet_output}" | sed -n 's/^Wrote to file: //gp' > quadlet.config
+printf '%s\n' "${podlet_output}" | sed -n 's/^Wrote to file: //gp' > "${PODLET_FILE}"
 
 # correct the network configuration of all of the generated container files
-grep '\.container$' quadlet.config | xargs sed -i '/^Network=/s/$/.network/g'
+grep '\.container$' "${PODLET_FILE}" | xargs sed -i '/^Network=/s/$/.network/g'

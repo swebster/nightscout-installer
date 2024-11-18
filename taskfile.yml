@@ -31,8 +31,13 @@ tasks:
     generates:
       - .env.secrets
 
+  service:check:
+    preconditions:
+      - sh: test -d /run/systemd/system
+        msg: Service tasks are only supported when using systemd.
+
   service:generate:
-    deps: [config:local]
+    deps: [config:local, service:check]
     cmds:
       - test ! -f {{.PODLET_FILE}} || grep "^{{.QUADLET_DIR}}/" {{.PODLET_FILE}} | xargs rm
       - ./configure_quadlet.sh
@@ -45,9 +50,15 @@ tasks:
       - docker-compose.networks.yml
     generates:
       - '{{.PODLET_FILE}}'
-    preconditions:
-      - sh: test -d /run/systemd/system
-        msg: Service generation is only supported when using systemd.
+
+  service:status:
+    deps: [service:generate]
+    vars:
+      SERVICES:
+        sh: sed -n "s|^{{.QUADLET_DIR}}/\(.*\)\.container|\1|gp" {{.PODLET_FILE}}
+    cmds:
+      - cmd: systemctl --user status {{splitList "\n" .SERVICES | join " "}}
+        ignore_error: true
 
   service:secrets:
     deps: [config:secrets]

@@ -31,13 +31,8 @@ tasks:
     generates:
       - .env.secrets
 
-  service:check:
-    preconditions:
-      - sh: test -d /run/systemd/system
-        msg: Service tasks are only supported when using systemd.
-
   service:generate:
-    deps: [config:local, service:check]
+    deps: [config:local]
     cmds:
       - test ! -f {{.PODLET_FILE}} || grep "^{{.QUADLET_DIR}}/" {{.PODLET_FILE}} | xargs rm
       - ./configure_quadlet.sh
@@ -50,15 +45,9 @@ tasks:
       - docker-compose.networks.yml
     generates:
       - '{{.PODLET_FILE}}'
-
-  service:status:
-    deps: [service:generate]
-    vars:
-      SERVICES:
-        sh: sed -n "s|^{{.QUADLET_DIR}}/\(.*\)\.container|\1|gp" {{.PODLET_FILE}}
-    cmds:
-      - cmd: systemctl --user status {{splitList "\n" .SERVICES | join " "}}
-        ignore_error: true
+    preconditions:
+      - sh: test -d /run/systemd/system
+        msg: Service tasks are only supported when using systemd.
 
   service:secrets:
     deps: [config:secrets]
@@ -78,6 +67,34 @@ tasks:
         msg: Installation of secrets is only supported when using podman.
     status:
       - test {{len .MISSING_SECRETS}} -eq 0
+
+  service:start:
+    deps: [service:secrets, compose:images]
+    cmds:
+      - task: systemctl:start
+
+  service:status:
+    cmds:
+      - task: systemctl:status
+        vars: { IGNORE_ERRORS: true }
+
+  service:stop:
+    cmds:
+      - task: systemctl:stop
+        vars: { REVERSE_ORDER: true }
+
+  systemctl:*:
+    internal: true
+    deps: [service:generate]
+    vars:
+      COMMAND: '{{index .MATCH 0}}'
+      SORT: '{{eq .REVERSE_ORDER true | ternary "sort -r" "sort"}}'
+      SERVICES:
+        sh: sed -n "s|^{{.QUADLET_DIR}}/\(.*\)\.container|\1|gp" {{.PODLET_FILE}} | {{.SORT}}
+      EXIT_CODE: '{{eq .IGNORE_ERRORS true | ternary 0 `$?`}}'
+    cmds:
+      - sh -c 'systemctl --user {{.COMMAND}} {{splitList "\n" .SERVICES | join " "}};
+        exit {{.EXIT_CODE}}'
 
   compose:images:
     deps: [config:local]

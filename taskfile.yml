@@ -12,7 +12,7 @@ vars:
 run: when_changed
 
 tasks:
-  configure-local:
+  config:local:
     cmds:
       - ./configure_local.sh
     interactive: true
@@ -21,8 +21,8 @@ tasks:
     generates:
       - .env.local
 
-  configure-secrets:
-    deps: [configure-local]
+  config:secrets:
+    deps: [config:local]
     cmds:
       - ./configure_secrets.sh
     interactive: true
@@ -31,7 +31,8 @@ tasks:
     generates:
       - .env.secrets
 
-  configure-quadlet:
+  service:generate:
+    deps: [config:local]
     cmds:
       - test ! -f {{.PODLET_FILE}} || grep "^{{.QUADLET_DIR}}/" {{.PODLET_FILE}} | xargs rm
       - ./configure_quadlet.sh
@@ -46,13 +47,14 @@ tasks:
       - '{{.PODLET_FILE}}'
     preconditions:
       - sh: test -d /run/systemd/system
-        msg: Quadlet configuration is only supported when using systemd.
+        msg: Service generation is only supported when using systemd.
 
-  install-secrets:
-    deps: [configure-secrets]
+  service:secrets:
+    deps: [config:secrets]
     vars:
       MISSING_SECRETS:
         sh: >
+          test {{base .DOCKER}} != podman ||
           grep -v COMPOSE_FILE .env.secrets | awk -F= '{print tolower($1)}' |
             xargs -I{} sh -c '{{.DOCKER}} secret exists {} || printf "%s\n" {}'
     cmds:
@@ -66,8 +68,8 @@ tasks:
     status:
       - test {{len .MISSING_SECRETS}} -eq 0
 
-  images:
-    deps: [configure-local]
+  compose:images:
+    deps: [config:local]
     vars:
       MISSING_IMAGES:
         sh: >
@@ -76,36 +78,35 @@ tasks:
           <({{.DOCKER}} images --filter dangling=false --format {{`{{.Repository}}:{{.Tag}}`}} |
             sed -E 's|^docker.io/(library/)?||' | sort)
     cmds:
-      - echo "Couldn't find the following images:"
+      - test {{len .MISSING_IMAGES}} -eq 0 || echo "Couldn't find the following images:"
       - for: { var: MISSING_IMAGES }
         cmd: printf '%s\n' {{.ITEM}}
       - '{{.DOCKER}} compose pull cloudflared mongo'
       - '{{.DOCKER}} compose build nightscout caddy'
     sources:
-      - .env
       - caddy/*
       - cgm-remote-monitor/*
     status:
       - test {{len .MISSING_IMAGES}} -eq 0
 
-  ps:
-    deps: [configure-local]
+  compose:ps:
+    deps: [config:local]
     cmds:
       - '{{.DOCKER}} compose ps'
 
-  up:
-    deps: [configure-secrets, images]
+  compose:up:
+    deps: [config:secrets, compose:images]
     env:
       COMPOSE_ENV_FILES: '{{printf "%s,.env.secrets" .COMPOSE_ENV_FILES}}'
     cmds:
       - '{{.DOCKER}} compose up --detach'
 
-  down:
-    deps: [configure-secrets, images]
+  compose:down:
+    deps: [config:secrets, compose:images]
     env:
       COMPOSE_ENV_FILES: '{{printf "%s,.env.secrets" .COMPOSE_ENV_FILES}}'
     cmds:
       - '{{.DOCKER}} compose down'
 
   default:
-    deps: [ps]
+    deps: [compose:ps]

@@ -31,10 +31,10 @@ tasks:
     generates:
       - .env.secrets
 
-  service:generate:
+  service:install:
     deps: [config:local]
     cmds:
-      - test ! -f {{.PODLET_FILE}} || grep "^{{.QUADLET_DIR}}/" {{.PODLET_FILE}} | xargs rm
+      - task: service:uninstall
       - ./configure_quadlet.sh
       - systemctl --user daemon-reload
     sources:
@@ -68,6 +68,17 @@ tasks:
     status:
       - test {{len .MISSING_SECRETS}} -eq 0
 
+  service:disable:
+    cmds:
+      - task: systemctl:disable
+    status:
+      - test ! -f {{.PODLET_FILE}}
+
+  service:enable:
+    deps: [service:secrets, compose:images]
+    cmds:
+      - task: systemctl:enable
+
   service:start:
     deps: [service:secrets, compose:images]
     cmds:
@@ -82,10 +93,21 @@ tasks:
     cmds:
       - task: systemctl:stop
         vars: { REVERSE_ORDER: true }
+    status:
+      - test ! -f {{.PODLET_FILE}}
+
+  service:uninstall:
+    deps: [service:stop, service:disable]
+    cmds:
+      - grep "^{{.QUADLET_DIR}}/" {{.PODLET_FILE}} | xargs rm
+      - systemctl --user daemon-reload
+      - rm {{.PODLET_FILE}}
+    status:
+      - test ! -f {{.PODLET_FILE}}
 
   systemctl:*:
     internal: true
-    deps: [service:generate]
+    deps: [service:install]
     vars:
       COMMAND: '{{index .MATCH 0}}'
       SORT: '{{eq .REVERSE_ORDER true | ternary "sort -r" "sort"}}'

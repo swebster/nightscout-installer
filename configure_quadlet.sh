@@ -23,7 +23,7 @@ pod_flag=$(test "${major_minor%%.*}" -ge 5 && echo --pod)
 
 # generate quadlet configuration files from the intermediate compose file
 mkdir -p "${CONFIG_ROOT}/containers/systemd"
-if ! podlet_output=$(podlet -p "${podlet_schema}" -u --skip-services-check \
+if ! podlet_output=$(podlet -p "${podlet_schema}" -u -i --skip-services-check \
   compose ${pod_flag:+"$pod_flag"} docker-compose.config.yml); then
   exit 1
 fi

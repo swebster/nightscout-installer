@@ -11,12 +11,12 @@ services:
   caddy:
     networks:
       - backend
-      - reverse_proxy
+      - revproxy
 
   cloudflared:
     networks:
-      - reverse_proxy
+      - revproxy
 
 networks:
   backend:
-  reverse_proxy:
+  revproxy:

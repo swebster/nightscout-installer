@@ -32,6 +32,18 @@ tasks:
     generates:
       - .env.secrets
 
+  config:secrets:truncate:
+    prompt: |-
+      This task will truncate .env.secrets for security. It is intended to be used
+      after you have installed Nightscout as a service and verified service:start.
+
+      Please note that the truncation of .env.secrets will disable compose:up until
+      that file has been deleted manually. Are you sure you want to continue?
+    cmds:
+      - truncate -s 0 .env.secrets
+    status:
+      - test ! -f .env.secrets || test ! -s .env.secrets
+
   service:install:
     deps: [config:local]
     cmds:
@@ -56,11 +68,12 @@ tasks:
       MISSING_SECRETS:
         sh: >
           test {{base .DOCKER}} != podman ||
-          grep -v COMPOSE_FILE .env.secrets | awk -F= '{print tolower($1)}' |
+          grep -v COMPOSE_FILE .env.secrets.template | awk -F= '{print tolower($1)}' |
             xargs -I{} sh -c '{{.DOCKER}} secret exists {} || printf "%s\n" {}'
     cmds:
       - for: { var: MISSING_SECRETS }
         cmd: >
+          grep -iq {{.ITEM}} .env.secrets &&
           awk -F= '$1 == "{{upper .ITEM}}" {printf("%s", $2)}' .env.secrets |
             {{.DOCKER}} secret create {{.ITEM}} -
     preconditions:
@@ -167,6 +180,9 @@ tasks:
       COMPOSE_ENV_FILES: '{{printf "%s,.env.secrets" .COMPOSE_ENV_FILES}}'
     cmds:
       - '{{.DOCKER}} compose up --detach'
+    preconditions:
+      - sh: test -s .env.secrets
+        msg: Compose is currently disabled as .env.secrets has been truncated.
 
   compose:down:
     deps: [config:secrets, compose:images]

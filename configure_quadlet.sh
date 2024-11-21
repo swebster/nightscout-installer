@@ -19,12 +19,10 @@ yq -Pi '.services *= (load("docker-compose.yml") |
 podman_version=$(which podman >/dev/null && podman --version || echo 'podman version 4.9.3')
 major_minor=$(sed -n 's/podman version //p' <<< "${podman_version}" | cut -d. -f -2)
 podlet_schema="${major_minor/4.9/4.8}"
-pod_flag=$(test "${major_minor%%.*}" -ge 5 && echo --pod)
 
 # generate quadlet configuration files from the intermediate compose file
 mkdir -p "${CONFIG_ROOT}/containers/systemd"
-if ! podlet_output=$(podlet -p "${podlet_schema}" -u --skip-services-check \
-  compose ${pod_flag:+"$pod_flag"} docker-compose.config.yml); then
+if ! podlet_output=$(podlet -p "${podlet_schema}" -u compose docker-compose.config.yml); then
   exit 1
 fi
 

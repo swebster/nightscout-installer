@@ -192,4 +192,8 @@ tasks:
       - '{{.DOCKER}} compose down'
 
   default:
-    deps: [compose:ps]
+    vars:
+      INSTALLED:
+        sh: test -f .task/quadlet.config && echo true || echo false
+    cmds:
+      - task: '{{if eq .INSTALLED "true"}}{{"service:status"}}{{else}}{{"compose:ps"}}{{end}}'

@@ -89,8 +89,8 @@ function install_yq() {
 }
 
 if ! grep -q podman /etc/passwd; then
-  sudo adduser --system --shell /bin/bash --home "${PODMAN_HOME}" podman
-  sudo -u podman cp -t "${PODMAN_HOME}" /etc/skel/.*
+  sudo useradd --system --shell /bin/bash --create-home --home-dir "${PODMAN_HOME}" podman
+  sudo -u podman touch "${PODMAN_HOME}/.hushlogin"
 fi
 
 if [[ -d /run/systemd/system ]]; then

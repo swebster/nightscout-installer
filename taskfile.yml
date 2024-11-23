@@ -1,8 +1,5 @@
 version: '3'
 
-env:
-  COMPOSE_ENV_FILES: .env,.env.local
-
 vars:
   DOCKER:
     sh: which podman || which docker
@@ -10,9 +7,22 @@ vars:
   PODLET_FILE: .task/quadlet.config
   INSTALL_STANZA: '\n\[Install\]\nWantedBy=default.target'
 
+env:
+  COMPOSE_ENV_FILES: .env,.env.local
+  DOCKER_HOST: '{{trimSuffix "/" .XDG_RUNTIME_DIR | printf "unix://%s/podman/podman.sock"}}'
+
 run: when_changed
 
 tasks:
+  config:compose:
+    vars:
+      CONFIG_FILE: '{{dir .QUADLET_DIR | printf "%s/containers.conf"}}'
+    cmds:
+      - mkdir -p {{dir .CONFIG_FILE}}
+      - printf '[engine]\ncompose_warning_logs=false\n' > {{.CONFIG_FILE}}
+    status:
+      - test -d {{dir .CONFIG_FILE}} && test -f {{.CONFIG_FILE}}
+
   config:local:
     cmds:
       - ./configure_local.sh
@@ -149,12 +159,12 @@ tasks:
         exit {{.EXIT_CODE}}'
 
   compose:images:
-    deps: [config:local]
+    deps: [config:compose, config:local]
     vars:
       MISSING_IMAGES:
         sh: >
           comm -23
-          <({{.DOCKER}} compose config --images | sort)
+          <(set -a; source .env.local; {{.DOCKER}} compose config --images | sort)
           <({{.DOCKER}} images --filter dangling=false --format {{`{{.Repository}}:{{.Tag}}`}} |
             sed -E 's|^docker.io/(library/)?||' | sort)
     cmds:
@@ -170,7 +180,7 @@ tasks:
       - test {{len .MISSING_IMAGES}} -eq 0
 
   compose:ps:
-    deps: [config:local]
+    deps: [config:compose, config:local]
     cmds:
       - '{{.DOCKER}} compose ps'
 

@@ -42,23 +42,13 @@ function install_task() {
 function install_docker_compose() {
   local -r docker_downloads='https://github.com/docker/compose/releases/download'
   local -r compose_binary="${docker_downloads}/${COMPOSE_VERSION}/docker-compose-linux-x86_64"
-  local -r docker_host='unix://${XDG_RUNTIME_DIR%/}/podman/podman.sock'
-  local -r podman_config='${XDG_CONFIG_HOME:-$HOME/.config}'
 
-  # use a login shell so XDG_* variables are defined when writing to config files
-  sudo -u podman --login sh -c "\
+  sudo -u podman sh -c "\
     curl -L ${compose_binary} -o ${PODMAN_BIN}/docker-compose && \
-    chmod +x ${PODMAN_BIN}/docker-compose && \
-    systemctl --user enable --now podman.socket && \
-    printf 'export %s=%s\n' \
-      COMPOSE_ENV_FILES .env,.env.local \
-      DOCKER_HOST ${docker_host} \
-      >> ${PODMAN_HOME}/.profile && \
-    mkdir -p ${podman_config}/containers && \
-    printf '%s\n' \
-      [engine] \
-      compose_warning_logs=false \
-      > ${podman_config}/containers/containers.conf"
+    chmod +x ${PODMAN_BIN}/docker-compose"
+
+  # XDG_* variables are not defined in sudo -u sessions on all distros, so invoke systemctl as root
+  sudo systemctl -M podman@ --user enable --now podman.socket
 }
 
 function install_podlet() {

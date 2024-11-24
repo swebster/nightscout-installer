@@ -38,7 +38,6 @@ function install_task() {
     rm -f ${task_installer}"
 }
 
-# shellcheck disable=SC2016
 function install_docker_compose() {
   local -r docker_downloads='https://github.com/docker/compose/releases/download'
   local -r compose_binary="${docker_downloads}/${COMPOSE_VERSION}/docker-compose-linux-x86_64"
@@ -46,9 +45,6 @@ function install_docker_compose() {
   sudo -u podman sh -c "\
     curl -L ${compose_binary} -o ${PODMAN_BIN}/docker-compose && \
     chmod +x ${PODMAN_BIN}/docker-compose"
-
-  # XDG_* variables are not defined in sudo -u sessions on all distros, so invoke systemctl as root
-  sudo systemctl -M podman@ --user enable --now podman.socket
 }
 
 function install_podlet() {
@@ -84,6 +80,7 @@ if ! grep -q podman /etc/passwd; then
 fi
 
 if [[ -d /run/systemd/system ]]; then
+  sudo systemctl -M podman@ --user enable --now podman.socket
   if [[ ! -f /var/lib/systemd/linger/podman ]]; then
     sudo loginctl enable-linger podman
   fi

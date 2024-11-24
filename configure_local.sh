@@ -2,6 +2,16 @@
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 readonly ENV_LOCAL="${SCRIPT_DIR}/.env.local"
+readonly TMP_LOCAL="${ENV_LOCAL}.tmp"
+trap 'rm -f ${TMP_LOCAL}' EXIT
+
+function config_docker_host() {
+  local -r container_runtime=$(basename "$(which podman || which docker)")
+  if [[ "${container_runtime}" = "podman" ]]; then
+    local -r runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+    docker_host="unix://${runtime_dir%/}/podman/podman.sock"
+  fi
+}
 
 function config_timezone() {
   local -r default_timezone=$(date +%Z)
@@ -23,13 +33,22 @@ function config_tunnel() {
 }
 
 if [[ ! -f "${ENV_LOCAL}" ]]; then
+  config_docker_host
   config_timezone
   config_domain
   config_tunnel
+
+  if [[ -n "${docker_host}" ]]; then
+    printf '%s=%s\n' DOCKER_HOST "${docker_host}" > "${TMP_LOCAL}"
+  else
+    rm -f "${TMP_LOCAL}"
+  fi
 
   printf '%s=%s\n' \
     NIGHTSCOUT_TIMEZONE "${timezone}" \
     DOMAIN_NAME "${domain_name}" \
     CLOUDFLARE_TUNNEL_NAME "${tunnel_name}" \
-    > "${ENV_LOCAL}"
+    >> "${TMP_LOCAL}"
+
+  mv -f "${TMP_LOCAL}" "${ENV_LOCAL}"
 fi

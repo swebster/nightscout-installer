@@ -4,6 +4,16 @@ readonly CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}"
 readonly PODLET_FILE=.task/quadlet.config
 trap 'rm -f docker-compose.config.yml' EXIT
 
+# identify the appropriate podlet schema for the local version of podman
+function identify_podlet_schema() {
+  local -r schema_extractor='s/podman version ([0-9]+\.[0-9]+).*/\1/; s/4\.9/4.8/'
+  local -r podman_version=$(podman --version | sed -E "${schema_extractor}")
+  local -r schemas=('4.4' '4.5' '4.6' '4.7' '4.8' '5.0')
+  if printf '%s\n' "${schemas[@]}" | grep -Fxq "${podman_version}"; then
+    podlet_schema="${podman_version}"
+  fi
+}
+
 # generate intermediate compose file with interpolated variables
 $(which podman || which docker) compose \
   -f docker-compose.yml -f docker-compose.networks.yml \
@@ -15,14 +25,14 @@ yq -Pi '.services *= (load("docker-compose.yml") |
     .services | .[] |= pick(["ports", "volumes"])
   )' docker-compose.config.yml
 
-# generate the appropriate podlet flags for the local version of podman
-podman_version=$(which podman >/dev/null && podman --version || echo 'podman version 4.9.3')
-major_minor=$(sed -n 's/podman version //p' <<< "${podman_version}" | cut -d. -f -2)
-podlet_schema="${major_minor/4.9/4.8}"
+if which podman >/dev/null; then
+  identify_podlet_schema
+fi
 
 # generate quadlet configuration files from the intermediate compose file
 mkdir -p "${CONFIG_ROOT}/containers/systemd"
-if ! podlet_output=$(podlet -p "${podlet_schema}" -u compose docker-compose.config.yml); then
+if ! podlet_output=$(podlet ${podlet_schema:+-p $podlet_schema }-u \
+  compose docker-compose.config.yml); then
   exit 1
 fi
 

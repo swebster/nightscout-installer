@@ -101,3 +101,6 @@ if ! sudo -u podman test -d "${PODMAN_SRC}/nightscout"; then
     mkdir -p ${PODMAN_SRC} && \
     git clone https://github.com/swebster/nightscout.git ${PODMAN_SRC}/nightscout"
 fi
+
+echo 'User "podman" has been created to run services in containers.'
+echo 'Execute "sudo machinectl shell podman@.host" to start a shell as that user.'

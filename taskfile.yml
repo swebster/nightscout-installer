@@ -2,7 +2,7 @@ version: '3'
 
 vars:
   DOCKER:
-    sh: basename $(which podman || which docker)
+    sh: basename $(command -v podman || command -v docker)
   QUADLET_DIR: '{{.XDG_CONFIG_HOME | default (printf "%s/.config" .HOME)}}/containers/systemd'
   PODLET_FILE: .task/quadlet.config
   INSTALL_STANZA: '\n\[Install\]\nWantedBy=default.target'

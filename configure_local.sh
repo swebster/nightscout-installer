@@ -6,7 +6,7 @@ readonly TMP_LOCAL="${ENV_LOCAL}.tmp"
 trap 'rm -f ${TMP_LOCAL}' EXIT
 
 function config_docker_host() {
-  local -r container_runtime=$(basename "$(which podman || which docker)")
+  local -r container_runtime=$(basename "$(command -v podman || command -v docker)")
   if [[ "${container_runtime}" = "podman" ]]; then
     local -r runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
     docker_host="unix://${runtime_dir%/}/podman/podman.sock"

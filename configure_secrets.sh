@@ -131,4 +131,5 @@ if [[ ! -f "${ENV_SECRETS}" ]]; then
     >> "${TMP_SECRETS}"
 
   mv -f "${TMP_SECRETS}" "${ENV_SECRETS}"
+  chmod 0600 "${ENV_SECRETS}"
 fi

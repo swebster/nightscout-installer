@@ -15,7 +15,7 @@ function identify_podlet_schema() {
 }
 
 # generate intermediate compose file with interpolated variables
-$(which podman || which docker) compose \
+$(command -v podman || command -v docker) compose \
   -f docker-compose.yml -f docker-compose.networks.yml \
   config --no-normalize -o docker-compose.config.yml
 
@@ -25,7 +25,7 @@ yq -Pi '.services *= (load("docker-compose.yml") |
     .services | .[] |= pick(["ports", "volumes"])
   )' docker-compose.config.yml
 
-if which podman >/dev/null; then
+if command -v podman >/dev/null; then
   identify_podlet_schema
 fi
 

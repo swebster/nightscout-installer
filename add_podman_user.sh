@@ -28,6 +28,20 @@ function assign_subids() {
     podman
 }
 
+function install_prerequisites() {
+  local -r packages=(podman podman-docker git systemd-container)
+
+  if [[ -x "$(command -v apt-get)" ]]; then
+    sudo apt-get -y install "${packages[@]}"
+  elif [[ -x "$(command -v dnf)" ]]; then
+    sudo dnf -y install "${packages[@]}"
+  else
+    >&2 echo 'Error: unsupported package manager. Please install the following packages manually:'
+    >&2 printf -- '- %s\n' "${packages[@]}"
+    exit 1
+  fi
+}
+
 function install_task() {
   local -r task_installer="${PODMAN_HOME}/install_task.sh"
 
@@ -73,6 +87,8 @@ function install_yq() {
     curl -L ${yq_downloads}/${YQ_VERSION}/yq_linux_amd64 -o ${PODMAN_BIN}/yq && \
     chmod +x ${PODMAN_BIN}/yq"
 }
+
+install_prerequisites
 
 if ! grep -q podman /etc/passwd; then
   sudo useradd --system --shell /bin/bash --create-home --home-dir "${PODMAN_HOME}" podman

@@ -16,13 +16,29 @@ function config_ns_api_secret() {
   echo "NIGHTSCOUT_API_SECRET=${ns_api_secret}"
 }
 
+function validate_cf_token() {
+  declare -a token_options
+  token_options+=(-H "Authorization: Bearer $1")
+  local -r validation=$(curl -s "${token_options[@]}" "${CF_API_ROOT}/user/tokens/verify")
+  local -r is_valid=$(echo "${validation}" | jq '.success == true and .result.status == "active"')
+
+  if [[ "${is_valid}" = 'true' ]]; then
+    echo "${validation}" | jq -r '.messages[0].message'
+  else
+    echo "${validation}" | jq -r '.errors[0].message'
+    exit 1
+  fi
+}
+
 # https://github.com/caddy-dns/cloudflare?tab=readme-ov-file#configuration
 function config_cf_api_token() {
   read -rp 'Enter your Cloudflare API token: ' cf_api_token
+  validate_cf_token "${cf_api_token}"
   echo "CLOUDFLARE_API_TOKEN=${cf_api_token}"
 }
 function config_cf_zone_token() {
   read -rp 'Enter your Cloudflare zone token: ' cf_zone_token
+  validate_cf_token "${cf_zone_token}"
   echo "CLOUDFLARE_ZONE_TOKEN=${cf_zone_token}"
 }
 

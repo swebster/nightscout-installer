@@ -117,11 +117,12 @@ tasks:
       - test {{len .DISABLED_UNITS}} -eq 0
 
   service:start:
-    deps: [compose:images, service:secrets]
+    deps: [compose:images, service:secrets, service:install]
     cmds:
       - task: systemctl:start
 
   service:status:
+    deps: [service:install]
     cmds:
       - task: systemctl:status
         vars: { IGNORE_ERRORS: true }
@@ -144,7 +145,6 @@ tasks:
 
   systemctl:*:
     internal: true
-    deps: [service:install]
     vars:
       COMMAND: '{{index .MATCH 0}}'
       SORT: '{{eq .REVERSE_ORDER true | ternary "sort -r" "sort"}}'
@@ -154,6 +154,8 @@ tasks:
     cmds:
       - sh -c 'systemctl --user {{.COMMAND}} {{splitList "\n" .SERVICES | join " "}};
         exit {{.EXIT_CODE}}'
+    preconditions:
+      - sh: test -f {{.PODLET_FILE}}
 
   compose:images:
     deps: [config:compose, config:local]

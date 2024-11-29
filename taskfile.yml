@@ -56,7 +56,7 @@ tasks:
     cmds:
       - task: service:uninstall
       - ./configure_quadlet.sh
-      - systemctl --user daemon-reload
+      - task: service:reload
     sources:
       - .env
       - .env.local
@@ -98,7 +98,7 @@ tasks:
     cmds:
       - for: { var: ENABLED_UNITS }
         cmd: sed -i -z 's/{{.INSTALL_STANZA}}\n//' '{{.ITEM}}'
-      - systemctl --user daemon-reload
+      - task: service:reload
     status:
       - test {{len .ENABLED_UNITS}} -eq 0
 
@@ -112,9 +112,15 @@ tasks:
     cmds:
       - for: { var: DISABLED_UNITS }
         cmd: sed -i '$a\{{.INSTALL_STANZA}}' '{{.ITEM}}'
-      - systemctl --user daemon-reload
+      - task: service:reload
     status:
       - test {{len .DISABLED_UNITS}} -eq 0
+
+  service:reload:
+    internal: true
+    cmds:
+      - systemctl --user daemon-reload
+    run: always
 
   service:start:
     deps: [compose:images, service:secrets, service:install]
@@ -138,8 +144,8 @@ tasks:
     deps: [service:stop]
     cmds:
       - grep '^{{.QUADLET_DIR}}/' {{.PODLET_FILE}} | xargs rm
-      - systemctl --user daemon-reload
       - rm {{.PODLET_FILE}}
+      - task: service:reload
     status:
       - test ! -f {{.PODLET_FILE}}
 

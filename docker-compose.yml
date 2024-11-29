@@ -19,6 +19,15 @@ services:
     environment:
       NODE_ENV: production
       TZ: "${NIGHTSCOUT_TIMEZONE:?}"
+      TIME_FORMAT: 24
+
+      # DISPLAY_UNITS (mg/dl) - Options are mg/dl or mmol/L (or just mmol). Setting to mmol
+      # puts the entire server into mmol/L mode by default, no further settings needed.
+      DISPLAY_UNITS: mmol
+
+      # SCALE_Y (log) - The type of scaling used for the Y axis of the charts system wide. The linear option
+      # has equidistant tick marks; the range used is dynamic so that space at the top of chart isn't wasted.
+      SCALE_Y: linear
 
       # MONGO_CONNECTION - The connection string for your Mongo database.
       # Something like mongodb://sally:sallypass@ds099999.mongolab.com:99999/nightscout

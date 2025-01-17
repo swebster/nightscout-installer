@@ -73,7 +73,7 @@ services:
       - cloudflare_zone_token
 
   cloudflared:
-    image: "cloudflare/cloudflared:${CLOUDFLARED_VERSION:?}"
+    image: docker.io/cloudflare/cloudflared:latest
     container_name: cloudflared
     command: tunnel run --credentials-file /run/secrets/cloudflare_tunnel_cred "${CLOUDFLARE_TUNNEL_NAME:?}"
     restart: unless-stopped

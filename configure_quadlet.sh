@@ -39,5 +39,8 @@ fi
 # record the full paths of all of the generated container/network/pod files
 printf '%s\n' "${podlet_output}" | sed -n 's/^Wrote to file: //gp' > "${PODLET_FILE}"
 
-# correct the network configuration of all of the generated container files
-grep '\.container$' "${PODLET_FILE}" | xargs sed -i '/^Network=/s/$/.network/g'
+# correct the network configuration of all of the generated container files and
+# enable auto-updates for all containers that should use the latest images
+grep '\.container$' "${PODLET_FILE}" | xargs sed -i \
+  -e '/^Network=/s/$/.network/g' \
+  -e '/^Image=[^:]*:latest$/s/$/\nAutoUpdate=registry/'

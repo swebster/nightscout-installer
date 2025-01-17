@@ -166,12 +166,13 @@ tasks:
   compose:images:
     deps: [config:compose, config:local]
     vars:
+      SORT: sed -E 's|^docker.io/(library/)?||' | sort
+      IMAGE_FORMAT: '{{`{{.Repository}}:{{.Tag}}`}}'
       MISSING_IMAGES:
         sh: >
           comm -23
-          <(set -a; source .env.local; {{.DOCKER}} compose config --images | sort)
-          <({{.DOCKER}} images --filter dangling=false --format {{`{{.Repository}}:{{.Tag}}`}} |
-            sed -E 's|^docker.io/(library/)?||' | sort)
+          <(set -a; source .env.local; {{.DOCKER}} compose config --images | {{.SORT}})
+          <({{.DOCKER}} images --filter dangling=false --format {{.IMAGE_FORMAT}} | {{.SORT}})
     cmds:
       - test {{len .MISSING_IMAGES}} -eq 0 || echo "Couldn't find the following images:"
       - for: { var: MISSING_IMAGES }

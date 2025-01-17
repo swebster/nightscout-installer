@@ -96,7 +96,7 @@ if ! grep -q podman /etc/passwd; then
 fi
 
 if [[ -d /run/systemd/system ]]; then
-  sudo systemctl -M podman@ --user enable --now podman.socket
+  sudo systemctl -M podman@ --user enable --now podman.socket podman-auto-update.timer
   if [[ ! -f /var/lib/systemd/linger/podman ]]; then
     sudo loginctl enable-linger podman
   fi

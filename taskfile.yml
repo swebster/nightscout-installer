@@ -90,6 +90,7 @@ tasks:
       - test {{len .MISSING_SECRETS}} -eq 0
 
   service:disable:
+    deps: [service:stop]
     vars:
       ENABLED_UNITS:
         sh: >
@@ -103,7 +104,7 @@ tasks:
       - test {{len .ENABLED_UNITS}} -eq 0
 
   service:enable:
-    deps: [compose:images, service:secrets, service:install]
+    deps: [service:start]
     vars:
       DISABLED_UNITS:
         sh: >

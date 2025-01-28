@@ -211,6 +211,6 @@ tasks:
   default:
     vars:
       INSTALLED:
-        sh: test -f .task/quadlet.config && echo true || echo false
+        sh: test -f {{.PODLET_FILE}} && echo true || echo false
     cmds:
       - task: '{{if eq .INSTALLED "true"}}{{"service:status"}}{{else}}{{"compose:ps"}}{{end}}'

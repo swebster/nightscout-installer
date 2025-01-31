@@ -12,6 +12,7 @@ run: when_changed
 
 tasks:
   config:compose:
+    desc: Create a basic container engine config file
     vars:
       CONFIG_FILE: '{{dir .QUADLET_DIR | printf "%s/containers.conf"}}'
     cmds:
@@ -21,6 +22,7 @@ tasks:
       - test {{base .HOME}} != podman || test -f {{.CONFIG_FILE}}
 
   config:local:
+    desc: Create a config file for custom settings
     cmds:
       - ./configure_local.sh
     interactive: true
@@ -30,6 +32,7 @@ tasks:
       - .env.local
 
   config:secrets:
+    desc: Create a config file for sensitive data
     deps: [config:local]
     cmds:
       - ./configure_secrets.sh
@@ -40,6 +43,7 @@ tasks:
       - .env.secrets
 
   config:secrets:truncate:
+    desc: Delete sensitive data from the secret config file
     prompt: |-
       This task will truncate .env.secrets for security. It is intended to be used
       after you have installed Nightscout as a service and verified service:start.
@@ -52,6 +56,7 @@ tasks:
       - test ! -f .env.secrets || test ! -s .env.secrets
 
   service:install:
+    desc: Create systemd unit files to manage rootless containers
     deps: [config:local]
     cmds:
       - task: service:uninstall
@@ -70,6 +75,7 @@ tasks:
         msg: Service tasks are only supported when using systemd.
 
   service:secrets:
+    desc: Store sensitive config data appropriately
     deps: [config:secrets]
     vars:
       MISSING_SECRETS:
@@ -90,6 +96,7 @@ tasks:
       - test {{len .MISSING_SECRETS}} -eq 0
 
   service:disable:
+    desc: Prevent systemd from starting services automatically at boot
     deps: [service:stop]
     vars:
       ENABLED_UNITS:
@@ -104,6 +111,7 @@ tasks:
       - test {{len .ENABLED_UNITS}} -eq 0
 
   service:enable:
+    desc: Configure systemd to start services automatically at boot
     deps: [service:start]
     vars:
       DISABLED_UNITS:
@@ -118,23 +126,27 @@ tasks:
       - test {{len .DISABLED_UNITS}} -eq 0
 
   service:reload:
+    desc: Prompt systemd to reload unit files for the current user
     internal: true
     cmds:
       - systemctl --user daemon-reload
     run: always
 
   service:start:
+    desc: Start rootless containers as systemd user services
     deps: [compose:images, service:secrets, service:install]
     cmds:
       - task: systemctl:start
 
   service:status:
+    desc: Show the status of all installed systemd user services
     deps: [service:install]
     cmds:
       - task: systemctl:status
         vars: { IGNORE_ERRORS: true }
 
   service:stop:
+    desc: Stop containers running as systemd user services
     cmds:
       - task: systemctl:stop
         vars: { REVERSE_ORDER: true }
@@ -142,6 +154,7 @@ tasks:
       - test ! -f {{.PODLET_FILE}}
 
   service:uninstall:
+    desc: Delete systemd unit files for managing rootless containers
     deps: [service:stop]
     cmds:
       - grep '^{{.QUADLET_DIR}}/' {{.PODLET_FILE}} | xargs rm
@@ -151,6 +164,7 @@ tasks:
       - test ! -f {{.PODLET_FILE}}
 
   systemctl:*:
+    desc: Run the given systemctl command for all user services
     internal: true
     vars:
       COMMAND: '{{index .MATCH 0}}'
@@ -165,6 +179,7 @@ tasks:
       - sh: test -f {{.PODLET_FILE}}
 
   compose:images:
+    desc: Pull or build all the relevant container images
     deps: [config:compose, config:local]
     vars:
       SORT: sed -E 's|^docker.io/(library/)?||' | sort
@@ -187,11 +202,13 @@ tasks:
       - test {{len .MISSING_IMAGES}} -eq 0
 
   compose:ps:
+    desc: List the local containers that are not managed by systemd
     deps: [config:compose, config:local]
     cmds:
       - '{{.DOCKER}} compose ps'
 
   compose:up:
+    desc: Create and start containers without using systemd (e.g. for testing)
     deps: [config:secrets, compose:images]
     env:
       COMPOSE_ENV_FILES: '{{printf "%s,.env.secrets" .COMPOSE_ENV_FILES}}'
@@ -202,6 +219,7 @@ tasks:
         msg: Compose is currently disabled as .env.secrets has been truncated.
 
   compose:down:
+    desc: Stop and remove containers that are not managed by systemd
     deps: [config:secrets, compose:images]
     env:
       COMPOSE_ENV_FILES: '{{printf "%s,.env.secrets" .COMPOSE_ENV_FILES}}'
@@ -209,6 +227,7 @@ tasks:
       - '{{.DOCKER}} compose down'
 
   default:
+    desc: Show service status or list containers running under compose
     vars:
       INSTALLED:
         sh: test -f {{.PODLET_FILE}} && echo true || echo false

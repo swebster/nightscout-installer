@@ -34,7 +34,7 @@ function validate_cf_token() {
 function config_cf_dns_token() {
   read -rp 'Enter your Cloudflare DNS token: ' cf_dns_token
   validate_cf_token "${cf_dns_token}"
-  echo "CLOUDFLARE_API_TOKEN=${cf_dns_token}"
+  echo "CLOUDFLARE_DNS_TOKEN=${cf_dns_token}"
 }
 function config_cf_zone_token() {
   read -rp 'Enter your Cloudflare zone token: ' cf_zone_token
@@ -141,7 +141,7 @@ if [[ ! -f "${ENV_SECRETS}" ]]; then
 
   printf '%s=%s\n' \
     NIGHTSCOUT_API_SECRET "${ns_api_secret}" \
-    CLOUDFLARE_API_TOKEN "${cf_dns_token}" \
+    CLOUDFLARE_DNS_TOKEN "${cf_dns_token}" \
     CLOUDFLARE_ZONE_TOKEN "${cf_zone_token}" \
     CLOUDFLARE_TUNNEL_CRED "${cf_tunnel_cred}" \
     >> "${TMP_SECRETS}"

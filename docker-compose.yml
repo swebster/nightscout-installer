@@ -69,7 +69,7 @@ services:
     environment:
       DOMAIN_NAME: "${DOMAIN_NAME:?}"
     secrets:
-      - cloudflare_api_token
+      - cloudflare_dns_token
       - cloudflare_zone_token
 
   cloudflared:
@@ -85,7 +85,7 @@ services:
 secrets:
   nightscout_api_secret:
     external: true
-  cloudflare_api_token:
+  cloudflare_dns_token:
     external: true
   cloudflare_zone_token:
     external: true

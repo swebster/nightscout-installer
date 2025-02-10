@@ -25,10 +25,10 @@ The first few steps of the installation depend on which container runtime engine
 
 ## Podman
 
-- Download (curl or wget) [bootstrap.sh](https://github.com/swebster/nightscout/raw/refs/heads/main/bootstrap.sh) from this repository
+- Download (curl or wget) [bootstrap.sh](https://github.com/swebster/nightscout-installer/raw/refs/heads/main/bootstrap.sh) from this repository
 - Review the script, and if you are confident that it doesn't do anything untoward then mark it as executable and run it
 - Run ```sudo machinectl shell podman@.host``` to start a shell as the new podman user
-- Change directory to /home/podman/src/nightscout
+- Change directory to /home/podman/src/nightscout-installer
 - Run ```task service:enable```
 
 # Configuration

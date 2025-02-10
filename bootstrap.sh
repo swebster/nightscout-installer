@@ -112,10 +112,10 @@ for dependency in {task,docker-compose,podlet,jq,yq}; do
   fi
 done
 
-if ! sudo -u podman test -d "${PODMAN_SRC}/nightscout"; then
+if ! sudo -u podman test -d "${PODMAN_SRC}/nightscout-installer"; then
   sudo -u podman sh -c "\
-    mkdir -p ${PODMAN_SRC} && \
-    git clone https://github.com/swebster/nightscout.git ${PODMAN_SRC}/nightscout"
+    mkdir -p ${PODMAN_SRC} && git clone \
+      https://github.com/swebster/nightscout-installer.git ${PODMAN_SRC}/nightscout-installer"
 fi
 
 echo 'User "podman" has been created to run services in containers.'

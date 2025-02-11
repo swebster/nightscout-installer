@@ -44,12 +44,15 @@ function install_prerequisites() {
 
 function install_task() {
   local -r task_installer="${PODMAN_HOME}/install_task.sh"
+  local -r podman_completions="${PODMAN_HOME}/.local/share/bash-completion/completions"
 
   sudo -u podman sh -c "\
     curl -L https://taskfile.dev/install.sh -o ${task_installer} && \
     chmod +x ${task_installer} && \
     ${task_installer} -d -b ${PODMAN_BIN} ${TASK_VERSION} && \
-    rm -f ${task_installer}"
+    rm -f ${task_installer} && \
+    mkdir -p ${podman_completions} && \
+    ${PODMAN_BIN}/task --completion bash > ${podman_completions}/task"
 }
 
 function install_docker_compose() {

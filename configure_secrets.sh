@@ -31,15 +31,10 @@ function validate_cf_token() {
 }
 
 # https://github.com/caddy-dns/cloudflare?tab=readme-ov-file#configuration
-function config_cf_dns_token() {
-  read -rp 'Enter your Cloudflare DNS token: ' cf_dns_token
-  validate_cf_token "${cf_dns_token}"
-  echo "CLOUDFLARE_DNS_TOKEN=${cf_dns_token}"
-}
-function config_cf_zone_token() {
-  read -rp 'Enter your Cloudflare zone token: ' cf_zone_token
-  validate_cf_token "${cf_zone_token}"
-  echo "CLOUDFLARE_ZONE_TOKEN=${cf_zone_token}"
+function config_cf_api_token() {
+  read -rp 'Enter your Cloudflare API token: ' cf_api_token
+  validate_cf_token "${cf_api_token}"
+  echo "CLOUDFLARE_API_TOKEN=${cf_api_token}"
 }
 
 function config_curl_options() {
@@ -135,14 +130,12 @@ if [[ ! -f "${ENV_SECRETS}" ]]; then
   grep COMPOSE_FILE "${ENV_SECRETS}.template" > "${TMP_SECRETS}"
 
   config_ns_api_secret
-  config_cf_dns_token
-  config_cf_zone_token
+  config_cf_api_token
   config_cf_tunnel_cred
 
   printf '%s=%s\n' \
     NIGHTSCOUT_API_SECRET "${ns_api_secret}" \
-    CLOUDFLARE_DNS_TOKEN "${cf_dns_token}" \
-    CLOUDFLARE_ZONE_TOKEN "${cf_zone_token}" \
+    CLOUDFLARE_API_TOKEN "${cf_api_token}" \
     CLOUDFLARE_TUNNEL_CRED "${cf_tunnel_cred}" \
     >> "${TMP_SECRETS}"
 

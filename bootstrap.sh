@@ -3,11 +3,11 @@
 readonly PODMAN_HOME='/home/podman'
 readonly PODMAN_BIN="${PODMAN_HOME}/.local/bin"
 readonly PODMAN_SRC="${PODMAN_HOME}/src"
-readonly COMPOSE_VERSION='v2.32.3'
+readonly COMPOSE_VERSION='v2.36.0'
 readonly PODLET_VERSION='v0.3.0'
-readonly TASK_VERSION='v3.40.1'
+readonly TASK_VERSION='v3.43.3'
 readonly JQ_VERSION='jq-1.7.1'
-readonly YQ_VERSION='v4.45.1'
+readonly YQ_VERSION='v4.45.4'
 
 function assign_subids() {
   mapfile -t -d: subuids < <(tail -1 /etc/subuid | cut -d: -f2,3)

@@ -59,10 +59,14 @@ function install_task() {
 function install_docker_compose() {
   local -r docker_downloads='https://github.com/docker/compose/releases/download'
   local -r compose_binary="${docker_downloads}/${COMPOSE_VERSION}/docker-compose-linux-x86_64"
+  local -r config_dir="${PODMAN_HOME}/.config/containers"
+  local -r disable_compose_warnings='[engine]\\ncompose_warning_logs=false\\n'
 
   sudo -u podman sh -c "\
     curl -L ${compose_binary} -o ${PODMAN_BIN}/docker-compose && \
-    chmod +x ${PODMAN_BIN}/docker-compose"
+    chmod +x ${PODMAN_BIN}/docker-compose && \
+    mkdir -p ${config_dir} && \
+    printf ${disable_compose_warnings} > ${config_dir}/containers.conf"
 }
 
 function install_podlet() {

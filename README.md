@@ -7,7 +7,7 @@ The optimal configuration is to run these components in rootless containers unde
 
 ## Prerequisites
 
-The first thing you need to do is to view your "Global API Key" in the [Cloudflare dashboard](https://dash.cloudflare.com/profile/api-tokens). Make a note of it somewhere as you will be prompted for it later. You should also [create separate zone and DNS tokens](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) as described [here](https://github.com/caddy-dns/cloudflare?tab=readme-ov-file#configuration) and store them in a secure location, such as your password manager.
+The first thing you need to do is to view your "Global API Key" in the [Cloudflare dashboard](https://dash.cloudflare.com/profile/api-tokens). Make a note of it somewhere as you will be prompted for it later. You should also [create a single API token](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) as described [here](https://github.com/caddy-dns/cloudflare?tab=readme-ov-file#configuration) and store it in a secure location, such as your password manager.
 
 The second prerequisite is to [create a Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/). You have to give it a name (such as your second-level domain) and add two public hostnames: both your domain (e.g. example.com) and a dedicated nightscout subdomain (e.g. nightscout.example.com). You will need to edit both of these hostname entries to ensure that the corresponding service type is set to HTTPS, the URL to caddy:443, and (under "Additional application settings/TLS") the origin server name is set to your domain name (e.g. example.com).
 

@@ -29,11 +29,12 @@ function assign_subids() {
 }
 
 function install_prerequisites() {
-  local -r packages=(podman podman-docker git systemd-container)
+  local packages=(podman podman-docker git systemd-container)
 
   if [[ -x "$(command -v apt-get)" ]]; then
     sudo apt-get -y install "${packages[@]}"
   elif [[ -x "$(command -v dnf)" ]]; then
+    packages+=(xz)
     sudo dnf -y install "${packages[@]}"
   else
     >&2 echo 'Error: unsupported package manager. Please install the following packages manually:'

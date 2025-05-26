@@ -11,16 +11,6 @@ env:
 run: when_changed
 
 tasks:
-  config:compose:
-    desc: Create a basic container engine config file
-    vars:
-      CONFIG_FILE: '{{dir .QUADLET_DIR | printf "%s/containers.conf"}}'
-    cmds:
-      - mkdir -p {{dir .CONFIG_FILE}}
-      - printf '[engine]\ncompose_warning_logs=false\n' > {{.CONFIG_FILE}}
-    status:
-      - test {{base .HOME}} != podman || test -f {{.CONFIG_FILE}}
-
   config:local:
     desc: Create a config file for custom settings
     cmds:
@@ -180,7 +170,7 @@ tasks:
 
   compose:images:
     desc: Pull or build all the relevant container images
-    deps: [config:compose, config:local]
+    deps: [config:local]
     vars:
       SORT: sed -E 's|^docker.io/(library/)?||' | sort
       IMAGE_FORMAT: '{{`{{.Repository}}:{{.Tag}}`}}'
@@ -203,7 +193,7 @@ tasks:
 
   compose:ps:
     desc: List the local containers that are not managed by systemd
-    deps: [config:compose, config:local]
+    deps: [config:local]
     cmds:
       - '{{.DOCKER}} compose ps'
 

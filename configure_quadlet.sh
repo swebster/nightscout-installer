@@ -39,8 +39,10 @@ fi
 # record the full paths of all of the generated container/network/pod files
 printf '%s\n' "${podlet_output}" | sed -n 's/^Wrote to file: //gp' > "${PODLET_FILE}"
 
-# correct the network configuration of all of the generated container files and
-# enable auto-updates for all containers that should use the latest images
+# correct the network configuration of all of the generated container files,
+# enable auto-updates for all containers that should use the latest images and
+# map the root user in the caddy container to a UID in podman's /etc/subuid range
 grep '\.container$' "${PODLET_FILE}" | xargs sed -i \
   -e '/^Network=/s/$/.network/g' \
-  -e '/^Image=[^:]*:latest$/s/$/\nAutoUpdate=registry/'
+  -e '/^Image=[^:]*:latest$/a AutoUpdate=registry' \
+  -e '/^Volume=caddy_config:/i UserNS=auto'

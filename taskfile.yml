@@ -130,10 +130,12 @@ tasks:
 
   service:status:
     desc: Show the status of all installed systemd user services
-    deps: [service:install]
     cmds:
       - task: systemctl:status
         vars: { IGNORE_ERRORS: true }
+    preconditions:
+      - sh: test -f {{.PODLET_FILE}}
+        msg: No services are currently installed.
 
   service:stop:
     desc: Stop containers running as systemd user services
@@ -166,7 +168,7 @@ tasks:
       - sh -c 'systemctl --user {{.COMMAND}} {{splitList "\n" .SERVICES | join " "}};
         exit {{.EXIT_CODE}}'
     preconditions:
-      - sh: test -f {{.PODLET_FILE}}
+      - test -f {{.PODLET_FILE}}
 
   compose:images:
     desc: Pull or build all the relevant container images
@@ -193,9 +195,13 @@ tasks:
 
   compose:ps:
     desc: List the local containers that are not managed by systemd
-    deps: [config:local]
     cmds:
       - '{{.DOCKER}} compose ps'
+    preconditions:
+      - sh: test -f .env.local
+        msg: Missing configuration file for custom settings.
+      - sh: test -f .env.secrets
+        msg: Missing configuration file for sensitive data.
 
   compose:up:
     desc: Create and start containers without using systemd (e.g. for testing)

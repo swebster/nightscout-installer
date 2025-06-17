@@ -51,7 +51,7 @@ tasks:
     cmds:
       - task: service:uninstall
       - ./configure_quadlet.sh
-      - task: service:reload
+      - task: service:enable
     sources:
       - .env
       - .env.local
@@ -87,7 +87,6 @@ tasks:
 
   service:disable:
     desc: Prevent systemd from starting services automatically at boot
-    deps: [service:stop]
     vars:
       ENABLED_UNITS:
         sh: >
@@ -97,12 +96,14 @@ tasks:
       - for: { var: ENABLED_UNITS }
         cmd: sed -i -z 's/{{.INSTALL_STANZA}}\n//' '{{.ITEM}}'
       - task: service:reload
+    preconditions:
+      - sh: test -f {{.PODLET_FILE}}
+        msg: No services are currently installed.
     status:
       - test {{len .ENABLED_UNITS}} -eq 0
 
   service:enable:
     desc: Configure systemd to start services automatically at boot
-    deps: [service:start]
     vars:
       DISABLED_UNITS:
         sh: >
@@ -112,6 +113,9 @@ tasks:
       - for: { var: DISABLED_UNITS }
         cmd: sed -i '$a\{{.INSTALL_STANZA}}' '{{.ITEM}}'
       - task: service:reload
+    preconditions:
+      - sh: test -f {{.PODLET_FILE}}
+        msg: No services are currently installed.
     status:
       - test {{len .DISABLED_UNITS}} -eq 0
 

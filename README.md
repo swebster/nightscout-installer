@@ -41,7 +41,7 @@ The remaining steps are almost the same regardless of whether you are using Dock
 - Navigate to your Nightscout URL (e.g. https://nightscout.example.com) in a browser and log in using the API_SECRET
 - If you are using Podman, run ```task config:secrets:truncate``` to erase your API_SECRET from the local filesystem
 
-You can then [configure Nightscout](https://nightscout.github.io/nightscout/profile_editor/) as normal. As you should not log in using the API_SECRET for regular use, be sure to to [create login tokens](https://nightscout.github.io/nightscout/security/#create-a-token) for your users. At minimum, you should create one token that has been granted the "readable" role for read-only access.
+You can then [configure Nightscout](https://nightscout.github.io/nightscout/profile_editor/) as normal. As you should not log in using the API_SECRET for regular use, be sure to [create login tokens](https://nightscout.github.io/nightscout/security/#create-a-token) for your users. At minimum, you should create one token that has been granted the "readable" role for read-only access.
 
 # Security
 

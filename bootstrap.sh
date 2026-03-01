@@ -7,7 +7,7 @@ readonly COMPOSE_VERSION='v5.1.0'
 readonly PODLET_VERSION='v0.3.1'
 readonly TASK_VERSION='v3.48.0'
 readonly JQ_VERSION='jq-1.8.1'
-readonly YQ_VERSION='v4.47.2'
+readonly YQ_VERSION='v4.52.4'
 
 function assign_subids() {
   mapfile -t -d: subuids < <(tail -1 /etc/subuid | cut -d: -f2,3)

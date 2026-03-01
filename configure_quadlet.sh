@@ -8,7 +8,7 @@ trap 'rm -f docker-compose.config.yml' EXIT
 function identify_podlet_schema() {
   local -r schema_extractor='s/podman version ([0-9]+\.[0-9]+).*/\1/; s/4\.9/4.8/'
   local -r podman_version=$(podman --version | sed -E "${schema_extractor}")
-  local -r schemas=('4.4' '4.5' '4.6' '4.7' '4.8' '5.0')
+  local -r schemas=('4.4' '4.5' '4.6' '4.7' '4.8' '5.0' '5.1' '5.2')
   if printf '%s\n' "${schemas[@]}" | grep -Fxq "${podman_version}"; then
     podlet_schema="${podman_version}"
   fi
@@ -43,6 +43,5 @@ printf '%s\n' "${podlet_output}" | sed -n 's/^Wrote to file: //gp' > "${PODLET_F
 # enable auto-updates for all containers that should use the latest images and
 # map the root user in the caddy container to a UID in podman's /etc/subuid range
 grep '\.container$' "${PODLET_FILE}" | xargs sed -i \
-  -e '/^Network=/s/$/.network/g' \
   -e '/^Image=[^:]*:latest$/a AutoUpdate=registry' \
   -e '/^Volume=caddy_config:/i UserNS=auto'

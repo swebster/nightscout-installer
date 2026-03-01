@@ -3,7 +3,7 @@
 readonly PODMAN_HOME='/home/podman'
 readonly PODMAN_BIN="${PODMAN_HOME}/.local/bin"
 readonly PODMAN_SRC="${PODMAN_HOME}/src"
-readonly COMPOSE_VERSION='v2.39.4'
+readonly COMPOSE_VERSION='v5.1.0'
 readonly PODLET_VERSION='v0.3.1'
 readonly TASK_VERSION='v3.48.0'
 readonly JQ_VERSION='jq-1.8.1'

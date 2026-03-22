@@ -5,7 +5,7 @@ readonly PODMAN_BIN="${PODMAN_HOME}/.local/bin"
 readonly PODMAN_SRC="${PODMAN_HOME}/src"
 readonly COMPOSE_VERSION='v5.1.1'
 readonly PODLET_VERSION='v0.3.1'
-readonly TASK_VERSION='v3.48.0'
+readonly TASK_VERSION='v3.49.1'
 readonly JQ_VERSION='jq-1.8.1'
 readonly YQ_VERSION='v4.52.4'
 

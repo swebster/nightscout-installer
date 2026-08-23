@@ -34,7 +34,7 @@ function install_prerequisites() {
   if [[ -x "$(command -v apt-get)" ]]; then
     sudo apt-get -y install "${packages[@]}"
   elif [[ -x "$(command -v dnf)" ]]; then
-    packages+=(xz)
+    packages+=(awk xz)
     sudo dnf -y install "${packages[@]}"
   else
     >&2 echo 'Error: unsupported package manager. Please install the following packages manually:'
